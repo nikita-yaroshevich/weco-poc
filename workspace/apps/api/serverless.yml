@@ -18,8 +18,8 @@ plugins:
     - serverless-offline
     - nx-workspace-builder
 # app and org for use with dashboard.serverless.com
-app: weco-edu
-org: nikitayaroshevichweco
+app: weco-edu-api
+org: wecoedudev
 
 custom:
   nx:
@@ -71,7 +71,7 @@ functions:
   api:
     handler: main.handler
     layers:
-      - arn:aws:lambda:${self:provider.region}:124599504267:layer:${self:service}-${self:provider.stage}-nodejs-common:3
+      - arn:aws:lambda:${self:provider.region}:124599504267:layer:${self:service}-${self:provider.stage}-nodejs-common:*
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
