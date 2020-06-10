@@ -70,15 +70,3 @@ functions:
 resources:
   # Cognito
   - ${file(serverless/resources/cognito-user-pool.yml)}
-  - ${file(serverless/resources/s3-buckets.yml)}
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"

@@ -39,8 +39,4 @@ api:
 
     #    Define function environment variables here
   environment:
-    DATABASE_HOST: ${ssm:/sls-${self:provider.stage}-database-config~true}.host
-    DATABASE_PORT: ${ssm:/sls-${self:provider.stage}-database-config~true}.port
-    DATABASE_USERNAME: ${ssm:/sls-${self:provider.stage}-database-config~true}.username
-    DATABASE_PASSWORD: ${ssm:/sls-${self:provider.stage}-database-config~true}.password
-    DATABASE_DATABASE: ${ssm:/sls-${self:provider.stage}-database-config~true}.database
+    DATABASE_CONNECTION: ${ssm:/sls-${self:provider.stage}-database-config~true}

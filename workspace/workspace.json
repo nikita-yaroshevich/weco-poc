@@ -12,7 +12,7 @@
           "builder": "@nrwl/node:build",
           "options": {
             "outputPath": "dist/apps/api",
-            "main": "apps/api/src/lambda.ts",
+            "main": "apps/api/src/main.ts",
             "tsConfig": "apps/api/tsconfig.app.json",
             "assets": ["apps/api/src/assets"]
           },
