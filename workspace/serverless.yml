@@ -6,8 +6,8 @@ plugins:
     - nx-workspace-builder
     - serverless-offline
 # app and org for use with dashboard.serverless.com
-app: weco-edu
-org: nikitayaroshevichweco
+app: weco-edu-api
+org: wecoedudev
 
 custom:
   nx:
