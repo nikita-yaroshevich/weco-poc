@@ -1,0 +1,80 @@
+service: api
+plugins:
+  localPath: './tools/serverless/plugins'
+  modules:
+    - serverless-layers
+    - nx-workspace-builder
+    - serverless-offline
+# app and org for use with dashboard.serverless.com
+app: weco-edu
+org: nikitayaroshevichweco
+
+custom:
+  nx:
+    workspacePath: './'
+  serverless-layers:
+    - common:
+        dependenciesPath: ./package.json
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+# you can overwrite defaults here
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'ca-central-1'}
+
+  deploymentBucket:
+    name: ${self:app}.${self:service}.sls.${self:provider.stage}.${self:provider.region}.deploys
+# you can add statements to the Lambda function's IAM Role here
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:ListBucket"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
+#            - "/*"
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+functions:
+  - ${file(./apps/api/functions.yml)}
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+resources:
+  # Cognito
+  - ${file(serverless/resources/cognito-user-pool.yml)}
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"

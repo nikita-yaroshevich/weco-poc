@@ -1,0 +1,28 @@
+FROM node:12-slim
+
+MAINTAINER Nikita Yaroshevich <nikita.yaroshevich@gmail.com>
+
+WORKDIR /workspace
+
+
+RUN apt-get update -y \
+  && apt-get install -y \
+  bash git curl python3-dev jq unzip \
+  && rm -rf /var/lib/apt/lists/*
+
+#Install AWS CLI
+RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+python3 get-pip.py
+RUN pip3 install awscli --upgrade
+RUN aws --version
+
+#Install Global Node Tools
+RUN npm install -g nodemon @nestjs/cli ts-node typescript typeorm @nrwl/cli serverless
+
+COPY ./docker /tmp
+RUN mv /tmp/scripts/*.sh /opt/
+
+RUN chmod a+x /opt/*.sh
+RUN echo '' >> /tmp/.npmrc && cp /tmp/.npmrc /root/.npmrc
+RUN mv /tmp/.aws /root/.aws
+CMD [ "/opt/start.sh" ]

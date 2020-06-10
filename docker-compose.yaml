@@ -1,0 +1,38 @@
+version: '3'
+services:
+  serverless:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    volumes:
+      - ./workspace:/workspace
+#    command: npm run start:api:debug
+#    command: npm run start:api
+    entrypoint: /bin/bash
+    stdin_open: true
+    environment:
+      - _environment=local
+      - PORT=8080
+      - REDIS_HOST=redis
+      - DEBUG=*
+    ports:
+     - "8080:8080"
+     - "9229:7777"
+#    depends_on:
+#     - redis
+#     - postgres
+
+#  postgres:
+#    image: postgres:10-alpine
+#    restart: always
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_DB: "petlyplans"
+#      POSTGRES_PASSWORD: "Hlk23450i"
+#      POSTGRES_USER: "root"
+#    environment:
+#  redis:
+#    image: "redis:alpine"
+#    ports:
+#      - "6379:6379"
