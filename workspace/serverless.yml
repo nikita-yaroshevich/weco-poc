@@ -10,6 +10,9 @@ app: weco-edu-api
 org: wecoedudev
 
 custom:
+  serverless-offline:
+    host: 0.0.0.0
+    httpPort: 8080
   nx:
     workspacePath: './'
   serverless-layers:
@@ -67,6 +70,7 @@ functions:
 resources:
   # Cognito
   - ${file(serverless/resources/cognito-user-pool.yml)}
+  - ${file(serverless/resources/s3-buckets.yml)}
 # you can add CloudFormation resource templates here
 #resources:
 #  Resources:

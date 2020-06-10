@@ -1,0 +1,5 @@
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:app}.${self:service}.sls.${self:provider.stage}.${self:provider.region}.deploys

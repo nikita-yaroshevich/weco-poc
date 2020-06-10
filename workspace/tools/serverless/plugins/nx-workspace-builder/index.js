@@ -45,10 +45,10 @@ class NxWorkspaceBuilder {
         return this.buildApp(this.serverless.service.service);
       },
       'after:package:createDeploymentArtifacts': () => (this.cleanup(this.serverless.service.service)),
-      'before:welcome:hello': this.beforeWelcome.bind(this),
-      'welcome:hello': this.welcomeUser.bind(this),
-      'welcome:world': this.displayHelloMessage.bind(this),
-      'after:welcome:world': this.afterHelloWorld.bind(this),
+      'before:deploy:function:packageFunction': (...args) => (console.log(this.serverless, args, this.options) && this.buildApp(this.serverless.service.service)),
+      'after:deploy:function:packageFunction': () => (this.buildApp(this.serverless.service.service)),
+
+
     };
   }
 
@@ -70,7 +70,7 @@ class NxWorkspaceBuilder {
   buildApp(appName) {
     if (!this.originalServicePath) {
       // Save original service path and functions
-      this.originalServicePath = this.serverless.config.servicePath
+      this.originalServicePath = this.serverless.config.servicePath;
       // Fake service path so that serverless will know what to zip
       this.serverless.config.servicePath = path.join(this.distFolder, appName);
     }
@@ -142,18 +142,6 @@ class NxWorkspaceBuilder {
 
   beforeWelcome() {
     this.serverless.cli.log('Hello from Serverless!');
-  }
-
-  welcomeUser() {
-    this.serverless.cli.log('Your message:');
-  }
-
-  displayHelloMessage() {
-    this.serverless.cli.log(`${this.options.message}`);
-  }
-
-  afterHelloWorld() {
-    this.serverless.cli.log('Please come again!');
   }
 
   async cleanup(appName) {
