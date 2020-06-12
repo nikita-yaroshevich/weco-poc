@@ -1,21 +1,50 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import { Logger } from '@nestjs/common';
+import { APIGatewayProxyHandler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
-
 import { AppModule } from './app/app.module';
+import { Server } from 'http';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import * as awsServerlessExpress from 'aws-serverless-express';
+import * as express from 'express';
+import {INestApplication, Logger} from "@nestjs/common";
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
+let cachedServer: Server;
+
+function applyAppConfiguration(app:INestApplication):INestApplication {
+  app.enableCors();
+  const globalPrefix = process.env.APP_PREFIX || 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = 8080;
+  return app;
+}
+
+const bootstrapLambdaServer = async (): Promise<Server> => {
+  const expressApp = express();
+  const adapter = new ExpressAdapter(expressApp);
+  const app = applyAppConfiguration(await NestFactory.create(AppModule, adapter));
+  await app.init();
+  return awsServerlessExpress.createServer(expressApp);
+};
+
+async function bootstrapExpress() {
+  const app = applyAppConfiguration(await NestFactory.create(AppModule));
+
+  const port = process.env.PORT || 8080;
   await app.listen(port, () => {
-    Logger.log('Listening at http://localhost:' + port + '/' + globalPrefix);
+    Logger.log(`App loaded at port ${port}`);
   });
 }
 
-bootstrap();
+export const handler: APIGatewayProxyHandler = async (event, context) => {
+  if (!cachedServer) {
+    const server = await bootstrapLambdaServer();
+    cachedServer = server;
+    return awsServerlessExpress.proxy(server, event, context, 'PROMISE')
+      .promise;
+  } else {
+    return awsServerlessExpress.proxy(cachedServer, event, context, 'PROMISE')
+      .promise;
+  }
+};
+
+if (process.env.IS_NOT_SERVERLESS) {
+  bootstrapExpress()
+}

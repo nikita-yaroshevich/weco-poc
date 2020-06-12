@@ -12,7 +12,7 @@
           "builder": "@nrwl/node:build",
           "options": {
             "outputPath": "dist/apps/api",
-            "main": "apps/api/src/lambda.ts",
+            "main": "apps/api/src/main.ts",
             "tsConfig": "apps/api/tsconfig.app.json",
             "assets": ["apps/api/src/assets"]
           },
@@ -82,6 +82,34 @@
           "options": {
             "jestConfig": "libs/common/jest.config.js",
             "tsConfig": "libs/common/tsconfig.spec.json",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
+    "core-module": {
+      "root": "libs/core-module",
+      "sourceRoot": "libs/core-module/src",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:lint",
+          "options": {
+            "linter": "eslint",
+            "config": "libs/core-module/.eslintrc",
+            "tsConfig": [
+              "libs/core-module/tsconfig.lib.json",
+              "libs/core-module/tsconfig.spec.json"
+            ],
+            "exclude": ["**/node_modules/**", "!libs/core-module/**"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/core-module/jest.config.js",
+            "tsConfig": "libs/core-module/tsconfig.spec.json",
             "passWithNoTests": true
           }
         }
