@@ -77,7 +77,6 @@ workflows:
       - deploy-infrastructure:
           name: Deploy Infrastructure
           stage_name: ${CIRCLE_BRANCH}
-          context: WeCo-Development
           filters:
             branches:
               only:
@@ -88,7 +87,6 @@ workflows:
           name: Deploy API
           service_path: workspace/apps/api
           stage_name: ${CIRCLE_BRANCH}
-          context: WeCo-Development
           requires:
             - Deploy Infrastructure
           filters:
