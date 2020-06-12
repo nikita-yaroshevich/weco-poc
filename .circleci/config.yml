@@ -1,3 +1,5 @@
+version: 2.1
+
 jobs:
   deploy-infrastructure:
     docker:
@@ -80,7 +82,7 @@ workflows:
       - deploy-infrastructure:
           name: Deploy Infrastructure
           stage_name: ${CIRCLE_BRANCH}
-          context: Development
+          context: WeCo-Development
           filters:
             branches:
               only:
@@ -91,7 +93,7 @@ workflows:
           name: Deploy API
           service_path: workspace/apps/api
           stage_name: ${CIRCLE_BRANCH}
-          context: Development
+          context: WeCo-Development
           requires:
             - deploy-infrastructure
           filters:
