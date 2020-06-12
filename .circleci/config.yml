@@ -38,7 +38,6 @@ jobs:
   deploy-service:
     docker:
       - image: circleci/node:12.10
-    parallelism: 3
     parameters:
       service_path:
         type: string
@@ -72,7 +71,7 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-            - << parameters.service_path >>/node_modules
+            - workspace/node_modules
           key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
 
 workflows:
