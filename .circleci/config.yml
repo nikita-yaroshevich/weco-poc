@@ -13,7 +13,6 @@ jobs:
       - restore_cache:
           keys:
             - dependencies-cache-{{ checksum "workspace/package-lock.json" }}
-            - dependencies-cache
       - run:
           name: Install Serverless CLI
           command: sudo npm i -g serverless
@@ -29,10 +28,9 @@ jobs:
             serverless deploy -s << parameters.stage_name >>
 
       - save_cache:
-          paths:
-            - node_modules
-            - workspace/node_modules
           key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+          paths:
+            - workspace/node_modules
 
 
   deploy-service:
@@ -49,11 +47,10 @@ jobs:
       - restore_cache:
           keys:
             - dependencies-cache-{{ checksum "workspace/package-lock.json" }}
-            - dependencies-cache
 
       - run:
-          name: Install Serverless CLI
-          command: sudo npm i -g serverless
+          name: Install NX and Serverless CLI
+          command: sudo npm i -g serverless @nrwl/cli
 
       - run:
           name: Install dependencies
@@ -69,10 +66,9 @@ jobs:
             serverless deploy -s << parameters.stage_name >>
 
       - save_cache:
-          paths:
-            - node_modules
-            - workspace/node_modules
           key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+          paths:
+            - workspace/node_modules
 
 workflows:
   build-deploy:
