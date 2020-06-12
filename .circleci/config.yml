@@ -95,7 +95,7 @@ workflows:
           stage_name: ${CIRCLE_BRANCH}
           context: WeCo-Development
           requires:
-            - deploy-infrastructure
+            - Deploy Infrastructure
           filters:
             branches:
               only:
