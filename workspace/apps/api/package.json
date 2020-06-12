@@ -1,0 +1,6 @@
+{
+  "name": "api",
+  "scripts": {
+    "preinstall": "(cd ../.. && npm install)"
+  }
+}
