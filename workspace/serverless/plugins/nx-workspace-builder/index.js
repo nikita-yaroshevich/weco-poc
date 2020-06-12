@@ -92,7 +92,7 @@ class NxWorkspaceBuilder {
           this.serverless.cli.log(`Target ${targetName} builded successfuly`);
           return r;
         }).catch(e => {
-          this.serverless.cli.warn(`Target ${targetName} FAIL`);
+          this.serverless.cli.log(`Target ${targetName} FAIL`);
           return Promise.reject(e)
         }))
       )
