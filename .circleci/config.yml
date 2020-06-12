@@ -1,37 +1,129 @@
 jobs:
-  deploy/infrastructure:
-    executor: serverless/default
+  deploy-infrastructure:
+    docker:
+      - image: circleci/node:12.10
+    parameters:
+      stage_name:
+        type: string
     steps:
       - checkout
-      - aws-cli/setup
-      - serverless/setup:
-          app-name: weco-edu-api
-          org-name: wecoedudev
+
+      - restore_cache:
+          keys:
+            - dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+            - dependencies-cache
       - run:
-          command: serverless deploy -v
-          name: deploy/infrastructure
-  deploy/api:
-    executor: serverless/default
+          name: Install Serverless CLI
+          command: sudo npm i -g serverless
+
+      - run:
+          name: Install dependencies
+          command: (cd workspace && npm install)
+
+      - run:
+          name: Deploy application
+          command: |
+            cd workspace
+            serverless deploy -s << parameters.stage_name >>
+
+      - save_cache:
+          paths:
+            - node_modules
+            - workspace/node_modules
+          key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+
+
+  deploy-service:
+    docker:
+      - image: circleci/node:12.10
+    parallelism: 3
+    parameters:
+      service_path:
+        type: string
+      stage_name:
+        type: string
     steps:
-      - serverless/setup:
-          app-name: weco-edu-api
-          org-name: wecoedudev
+      - checkout
+
+      - restore_cache:
+          keys:
+            - dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+            - dependencies-cache
+
       - run:
-          command: (cd apps/api && serverless deploy -v)
-          name: deploy/api
-orbs:
-  aws-cli: circleci/aws-cli@1.1.0
-  node: circleci/node@1.1.6
-  serverless-framework: circleci/serverless-framework@1.0.1
-version: 2.1
+          name: Install Serverless CLI
+          command: sudo npm i -g serverless
+
+      - run:
+          name: Install dependencies
+          command: |
+            npm install
+            cd << parameters.service_path >>
+            npm install
+
+      - run:
+          name: Deploy application
+          command: |
+            cd << parameters.service_path >>
+            serverless deploy -s << parameters.stage_name >>
+
+      - save_cache:
+          paths:
+            - node_modules
+            - << parameters.service_path >>/node_modules
+          key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
+
 workflows:
-  deploy:
+  build-deploy:
     jobs:
-      - node/test:
-          version: 13.11.0
-      - deploy/infrastructure:
+      # non-master branches deploys to stage named by the branch
+      - deploy-infrastructure:
+          name: Deploy Infrastructure
+          stage_name: ${CIRCLE_BRANCH}
+          context: Development
+          filters:
+            branches:
+              only:
+                - dev
+                - qa
+
+      - deploy-service:
+          name: Deploy API
+          service_path: workspace/apps/api
+          stage_name: ${CIRCLE_BRANCH}
+          context: Development
           requires:
-            - node/test
-      - deploy/api:
-          requires:
-            - deploy/infrastructure
+            - deploy-infrastructure
+          filters:
+            branches:
+              only:
+                - dev
+                - qa
+
+      # master branch deploys to the 'prod' stage
+#      - deploy-service:
+#          name: Deploy Users API
+#          service_path: services/users-api
+#          stage_name: prod
+#          context: Production
+#          filters:
+#            branches:
+#              only: master
+#
+#      - deploy-service:
+#          name: Deploy Posts API
+#          service_path: services/posts-api
+#          stage_name: prod
+#          context: Production
+#          filters:
+#            branches:
+#              only: master
+#
+#      - deploy-service:
+#          name: Deploy Cron Job
+#          service_path: services/cron-job
+#          stage_name: prod
+#          context: Production
+#          filters:
+#            branches:
+#              only: master
