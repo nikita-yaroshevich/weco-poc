@@ -38,5 +38,5 @@ api:
     #            path: /hello
 
     #    Define function environment variables here
-  environment:
-    DATABASE_CONNECTION: ${ssm:/sls-${self:provider.stage}-database-config~true}
+  #environment:
+  #  DATABASE_CONNECTION: ${ssm:/sls-${self:provider.stage}-database-config~true}

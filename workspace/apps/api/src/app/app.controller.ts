@@ -9,6 +9,6 @@ export class AppController {
 
   @Get('test')
   getData() {
-    return {...this.appService.getData(), env: this.config};
+    return {...this.appService.getData(), env: this.config, e2: process.env};
   }
 }

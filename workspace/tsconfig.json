@@ -16,7 +16,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@weco/common": ["libs/common/src/index.ts"]
+      "@weco/common": ["libs/common/src/index.ts"],
+      "@weco/core-module": ["libs/core-module/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

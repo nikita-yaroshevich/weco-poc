@@ -1,14 +1,17 @@
 'use strict';
 
 const vm = require('vm');
+const {watch} = require('fs');
 const fs = require('fs-extra');
 const Module = require('module');
 const path = require('path');
 const {execSync} = require('child_process');
+const {exec} = require('child_process');
+const {spawn} = require('child_process');
 const globby = require('globby');
 const util = require('util');
-
-const exec = util.promisify(require('child_process').exec);
+const {debounce} = require('lodash');
+// const exec = util.promisify(require('child_process').exec);
 
 const serverlessFolder = '.serverless';
 
@@ -18,7 +21,7 @@ class NxWorkspaceBuilder {
     this.options = options;
     const nx = (this.serverless.variables.service.custom && this.serverless.variables.service.custom.nx) ? this.serverless.variables.service.custom.nx : {};
     this.config = {
-      workspacePath: './',
+      workspacePath: this.serverless.variables.service.custom.workspacePath || './',
       ...nx,
     };
 
@@ -43,22 +46,20 @@ class NxWorkspaceBuilder {
     };
 
     this.hooks = {
-      'before:package:createDeploymentArtifacts': () => {
-        console.log(this.serverless);
-        return this.buildApp(this.serverless.service.service);
-      },
-      'after:package:createDeploymentArtifacts': () => (this.cleanup(this.serverless.service.service)),
-      'before:deploy:function:packageFunction': (...args) => (console.log(this.serverless, args, this.options) && this.buildApp(this.serverless.service.service)),
-      'after:deploy:function:packageFunction': () => (this.cleanup(this.serverless.service.service)),
+      'before:package:createDeploymentArtifacts': () => (this.build()),
+      'after:package:createDeploymentArtifacts': () => (this.cleanup()),
+      'before:deploy:function:packageFunction': () => (this.build()),
+      'after:deploy:function:packageFunction': () => (this.cleanup()),
       'before:offline:start:init': async () => {
-        console.log(this.options);
-        if (!this.originalServicePath) {
-          // Save original service path and functions
-          this.originalServicePath = this.serverless.config.servicePath;
-          // Fake service path so that serverless will know what to zip
-          this.serverless.config.servicePath = path.join(this.distFolder, 'api');
-        }
+
+        // if (!this.originalServicePath) {
+        //   // Save original service path and functions
+        //   this.originalServicePath = this.serverless.config.servicePath;
+        //   // Fake service path so that serverless will know what to zip
+        //   this.serverless.config.servicePath = path.join(this.distFolder, 'api');
+        // }
         // this.buildApp(this.options.nxapp || this.serverless.service.service, true);
+        this.build(true);
       },
       'before:offline:start:end': async () => {
         this.serverless.config.servicePath = this.originalServicePath;
@@ -73,26 +74,96 @@ class NxWorkspaceBuilder {
       : this.serverless.service.functions
   }
 
+  get buildTargets() {
+    console.log(this.options);
+    const optionsApps = (this.options.nxapps || '').split(',').map(s => s.trim()).filter(s => s !== '');
+    const apps = [].concat(this.config.apps || []);
+    const targets = [].concat(optionsApps, apps.filter(a => optionsApps.indexOf(a) === -1));
+    return targets;
+  }
+
   get distFolder() {
     return path.join(this.config.workspacePath, 'dist', 'apps');
   }
 
-  runCommand(hookScript) {
-    console.log(`Running command: ${hookScript}`);
-    return execSync(hookScript, {stdio: [this.stdin, this.stdout, this.stderr]});
+  async build(isWatching = false) {
+    const tasks = this.buildTargets.map(targetName => (
+        () => (this.buildApp(targetName, isWatching).then(r => {
+          this.serverless.cli.log(`Target ${targetName} builded successfuly`);
+          return r;
+        }).catch(e => {
+          this.serverless.cli.warn(`Target ${targetName} FAIL`);
+          return Promise.reject(e)
+        }))
+      )
+    );
+    const isParallel = this.options.nxParalel || this.config.isParallel || false;
+
+    const promise = isParallel ? Promise.all(tasks.map(t => t())) : tasks.reduce((p, fn) => p.then(fn), Promise.resolve());
+    if (!isWatching) {
+      return promise;
+    }
   }
 
   buildApp(appName, isWatching = false) {
+    const buildFolder = path.join(this.distFolder, appName);
     if (!this.originalServicePath) {
       // Save original service path and functions
       this.originalServicePath = this.serverless.config.servicePath;
       // Fake service path so that serverless will know what to zip
-      this.serverless.config.servicePath = path.join(this.distFolder, appName);
+      this.serverless.config.servicePath = buildFolder;
     }
-    this.runCommand(` (cd ${this.config.workspacePath} && nx build ${appName} ${isWatching && '--watch'})`);
-    const files = globby.sync(path.join(this.distFolder, appName));
-    console.log(files);
-    return files;
+    if (isWatching){
+      fs.ensureDir(buildFolder);
+      // hot reload
+      const watcher = watch(buildFolder, (eventType, filename) => {
+        if (['.js', '.jsx'].indexOf(path.extname(filename)) !== -1) {
+          const module = require.resolve(path.resolve(buildFolder, filename));
+          delete require.cache[module];
+        }
+        // globby.sync(buildFolder).forEach(filename => {
+          // if (['.js', '.jsx'].indexOf(path.extname(filename)) !== -1) {
+          //   const module = require.resolve(path.resolve(filename));
+          //   delete require.cache[module];
+          // }
+        // })
+      });
+      process.on('exit', function () {
+        watcher.close();
+      });
+    }
+    return this.runCommand('nx', ['build', appName, isWatching ? '--watch' : null])
+      .then(() => {
+        const files = globby.sync(buildFolder);
+        return files;
+      });
+  }
+
+  runCommand(hookScript, params = []) {
+    console.log(`Running command: ${hookScript} ${params.join(' ')}`);
+    return new Promise((resolve, reject) => {
+      let childProcess = spawn(hookScript, params, {
+        cwd: this.config.workspacePath,
+        stdio: [this.stdin, this.stdout, this.stderr],
+      });
+      childProcess.on('exit', () => {
+        console.log(`${hookScript} finished`);
+        childProcess = null;
+        resolve();
+      });
+      childProcess.on('error', (code) => {
+        console.log(`${hookScript} terminated due to error ${code}`);
+        childProcess = null;
+        reject();
+      });
+
+      process.on('exit', function () {
+        if (childProcess && childProcess.kill) {
+          childProcess.kill();
+        }
+      });
+    });
+    // return execSync(hookScript, {stdio: [this.stdin, this.stdout, this.stderr]});
   }
 
   async copyExtras(appName) {
@@ -153,15 +224,14 @@ class NxWorkspaceBuilder {
       serverlessFolder,
       path.basename(this.serverless.service.package.artifact)
     );
-    console.log(this.serverless.service.package.artifact);
-  }
-
-  beforeWelcome() {
-    this.serverless.cli.log('Hello from Serverless!');
   }
 
   async cleanup(appName) {
-    await this.moveArtifacts(appName);
+    const apps = this.buildTargets;
+    for (let i = 0; i < apps.length; i++) {
+      this.serverless.cli.log(`Moving Artifacts for ${apps[i]}`);
+      await this.moveArtifacts(apps[i]);
+    }
     // Restore service path
     this.serverless.config.servicePath = this.originalServicePath;
     // Remove temp build folder

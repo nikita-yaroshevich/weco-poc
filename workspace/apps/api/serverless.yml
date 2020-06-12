@@ -1,62 +1,35 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
-service: api
-plugins:
-  localPath: '../../tools/serverless/plugins'
-  modules:
-    - serverless-offline
-    - nx-workspace-builder
 # app and org for use with dashboard.serverless.com
 app: weco-edu-api
 org: wecoedudev
 
+service: api
 custom:
+  workspacePath: '../..'
+  stage: ${opt:stage, 'dev'}
+  config: ${file(${self:custom.workspacePath}/serverless/config/${self:custom.stage}.json)}
+  ACCOUNT_ID: ${self:custom.config.account_id}
+  serverless-offline:
+    host: 0.0.0.0
+    httpPort: 8080
   nx:
-    workspacePath: '../../'
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+    apps:
+      - ${self:service}
+
+plugins:
+  localPath: "../../serverless/plugins"
+  modules:
+    - serverless-aws-latest-layer-version
+    - nx-workspace-builder
+    - serverless-offline
 
 provider:
   name: aws
   runtime: nodejs12.x
-
-# you can overwrite defaults here
-  stage: dev
-  region: ca-central-1
+  stage: ${self:custom.stage}
+  region: ${opt:region, "${self:custom.config.region}"}
   deploymentBucket:
-    name: ${self:app}.${self:service}.sls.${self:provider.stage}.${self:provider.region}.deploys
-
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+    name: ${self:app}.sls.${self:provider.stage}.${self:provider.region}.deploys
+  environment: ${file(${self:custom.workspacePath}/serverless/environment.yml)}
 
 # you can add packaging information here
 #package:
@@ -71,10 +44,7 @@ functions:
   api:
     handler: main.handler
     layers:
-      - arn:aws:lambda:${self:provider.region}:124599504267:layer:${self:service}-${self:provider.stage}-nodejs-common:*
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
+      - arn:aws:lambda:${self:provider.region}:${self:custom.ACCOUNT_ID}:layer:${self:custom.config.baseService}-${self:provider.stage}-nodejs-common:$LATEST
     events:
       - http:
          path: /api/{any+}
