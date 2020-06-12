@@ -6,8 +6,7 @@ service: infrastructure
 plugins:
   localPath: './serverless/plugins'
   modules:
-  - serverless-layers
-  - nx-workspace-builder
+    - serverless-layers
 
 custom:
   workspacePath: './'
