@@ -2,6 +2,7 @@
     "name": "api",
     "scripts": {
         "preinstall": "(cd ../.. && npm install)",
+        "typeorm": "TS_NODE_PROJECT=tsconfig.json ts-node -r tsconfig-paths/register ../../node_modules/.bin/typeorm --config src/ormconfig.ts",
         "migration:run": "env"
     }
 }

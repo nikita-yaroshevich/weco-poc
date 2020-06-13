@@ -8,7 +8,7 @@ export async function typeORMConfigLoader({baseConfig, entities, isProd, srcDir}
         options = connectionManager.get('default').options;
         await connectionManager.get('default').close();
     } else {
-
+        // todo: Here is a good place to add loading DB connection params from AWS SSM ParamStore
         options = {
             ...baseConfig,
             entities: entities,
@@ -16,11 +16,11 @@ export async function typeORMConfigLoader({baseConfig, entities, isProd, srcDir}
             // Allow both start:prod and start:dev to use migrations
             // __dirname is either dist or src folder, meaning either
             // the compiled js in prod or the ts in dev.
-            migrations: [`${srcDir}/migrations/**/*{.ts,.js}`],
+            migrations: [`./src/migrations/**/*{.ts,.js}`],
             cli: {
                 // Location of migration should be inside src folder
                 // to be compiled into dist/ folder.
-                migrationsDir: `${srcDir}/migrations`
+                migrationsDir: `./src/migrations`
             }
         };
     }
