@@ -17,7 +17,7 @@ RUN pip3 install awscli --upgrade
 RUN aws --version
 
 #Install Global Node Tools
-RUN npm install -g nodemon @nestjs/cli ts-node typescript typeorm @nrwl/cli serverless
+RUN npm install -g @nestjs/cli ts-node @nrwl/cli serverless
 
 COPY ./docker /tmp
 RUN mv /tmp/scripts/*.sh /opt/
