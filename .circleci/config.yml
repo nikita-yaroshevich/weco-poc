@@ -53,22 +53,14 @@ jobs:
           command: sudo npm i -g serverless @nrwl/cli
 
       - run:
-          name: Install dependencies
-          command: |
-            npm install
-            cd << parameters.service_path >>
-            npm install
+          name: Run Migrations
+          command: npm run migration:run
 
       - run:
           name: Deploy application
           command: |
             cd << parameters.service_path >>
             serverless deploy -s << parameters.stage_name >>
-
-      - save_cache:
-          key: dependencies-cache-{{ checksum "workspace/package-lock.json" }}
-          paths:
-            - workspace/node_modules
 
 workflows:
   build-deploy:

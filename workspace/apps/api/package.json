@@ -1,6 +1,7 @@
 {
-  "name": "api",
-  "scripts": {
-    "preinstall": "(cd ../.. && npm install)"
-  }
+    "name": "api",
+    "scripts": {
+        "preinstall": "(cd ../.. && npm install)",
+        "migration:run": "ts-node ./src/ormconfig.ts"
+    }
 }
