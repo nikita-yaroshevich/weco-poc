@@ -52,11 +52,11 @@ jobs:
           name: Install NX and Serverless CLI
           command: sudo npm i -g serverless @nrwl/cli
 
-      - run:
-          name: Run Migrations
-          command: |
-            cd << parameters.service_path >>
-            npm run migration:run
+#      - run:
+#          name: Run Migrations
+#          command: |
+#            cd << parameters.service_path >>
+#            npm run migration:run
 
       - run:
           name: Deploy application

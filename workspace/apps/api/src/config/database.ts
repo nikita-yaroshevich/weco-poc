@@ -1,7 +1,13 @@
 const db = process.env.DATABASE_CONNECTION ? JSON.parse(process.env.DATABASE_CONNECTION) : {};
+db.type = process.env.DATABASE_TYPE || 'postgres';
 db.host = process.env.DATABASE_HOST || db.host;
-db.port = process.env.DATABASE_PORT || db.port;
+db.port = process.env.DATABASE_PORT || db.port || 5432;
 db.database = process.env.DATABASE_NAME || db.database;
 db.username = process.env.DATABASE_USERNAME || db.username;
 db.password = process.env.DATABASE_PASSWORD || db.password;
+db.synchronize = false;
+db.migrationsRun = false;
+db.logging = true;
+db.logger = 'file';
+db.cache = false;
 export default db;

@@ -2,6 +2,6 @@
     "name": "api",
     "scripts": {
         "preinstall": "(cd ../.. && npm install)",
-        "migration:run": "node src/ormconfig.js"
+        "migration:run": "env"
     }
 }

@@ -6,18 +6,22 @@ services:
       dockerfile: Dockerfile.local
     volumes:
       - ./workspace:/workspace
-#    command: npm run start:api:debug
-#    command: npm run start:api
+    #    command: npm run start:api:debug
+    #    command: npm run start:api
     entrypoint: /bin/bash
     stdin_open: true
     environment:
-      - _environment=local
+      - APP_ENV=dev
       - PORT=8080
       - REDIS_HOST=redis
       - DEBUG=*
+      - DATABASE_HOST=xxxx
+      - DATABASE_NAME=xxxx
+      - DATABASE_USERNAME=xxxx
+      - DATABASE_PASSWORD=xxxx
     ports:
-     - "8080:8080"
-     - "9229:7777"
+      - "8080:8080"
+      - "9229:7777"
 #    depends_on:
 #     - redis
 #     - postgres

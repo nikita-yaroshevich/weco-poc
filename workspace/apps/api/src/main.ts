@@ -7,6 +7,16 @@ import * as awsServerlessExpress from 'aws-serverless-express';
 import * as express from 'express';
 import {INestApplication, Logger} from "@nestjs/common";
 
+process.on('unhandledRejection', (reason) => {
+    // tslint:disable-next-line:no-console
+    console.error(reason);
+});
+
+process.on('uncaughtException', (reason) => {
+    // tslint:disable-next-line:no-console
+    console.error(reason);
+});
+
 let cachedServer: Server;
 
 function applyAppConfiguration(app:INestApplication):INestApplication {
