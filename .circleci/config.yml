@@ -54,7 +54,9 @@ jobs:
 
       - run:
           name: Run Migrations
-          command: npm run migration:run
+          command: |
+            cd << parameters.service_path >>
+            npm run migration:run
 
       - run:
           name: Deploy application
