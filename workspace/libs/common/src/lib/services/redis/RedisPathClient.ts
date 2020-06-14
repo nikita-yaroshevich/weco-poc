@@ -20,7 +20,7 @@ export class RedisPathClient {
         return this.client.removeField(this.path, field);
     }
 
-    getAll(): Observable<any[]> {
+    getAll(): Observable<{[k:string]: string}> {
         return from(this.client.client.hgetall(this.path));
     }
 }

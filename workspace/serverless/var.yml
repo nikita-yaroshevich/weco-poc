@@ -1,0 +1,8 @@
+cognito:
+    userPool: ${self:custom.stage}-user-pool-client
+    userPoolClient: ${self:custom.stage}-user-pool-client
+    userPoolArn: arn:aws:cognito-idp:${self:custom.region}:${self:custom.ACCOUNT_ID}:userpool/${self:custom.stage}-user-pool-client
+s3:
+    deploymentBucket: ${self:app}.sls.${self:custom.stage}.${self:custom.region}.deploys
+layers:
+    commonArn: arn:aws:lambda:${self:custom.region}:${self:custom.ACCOUNT_ID}:layer:${self:custom.config.baseService}-${self:custom.stage}-nodejs-common:$LATEST

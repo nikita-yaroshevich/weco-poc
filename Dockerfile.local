@@ -7,7 +7,7 @@ WORKDIR /workspace
 
 RUN apt-get update -y \
   && apt-get install -y \
-  bash git curl python3-dev jq unzip \
+  bash git curl python3-dev jq unzip procps \
   && rm -rf /var/lib/apt/lists/*
 
 #Install AWS CLI

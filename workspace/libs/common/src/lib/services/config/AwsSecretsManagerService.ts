@@ -1,5 +1,5 @@
 import { SecretsManager } from 'aws-sdk';
-import { Services } from '@idexx/common';
+import { Services } from '@weco/common';
 
 export class AwsSecretsManagerService {
     private static instance:AwsSecretsManagerService;

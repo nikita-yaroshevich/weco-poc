@@ -17,7 +17,8 @@
     "baseUrl": ".",
     "paths": {
       "@weco/common": ["libs/common/src/index.ts"],
-      "@weco/core-module": ["libs/core-module/src/index.ts"]
+      "@weco/core-module": ["libs/core-module/src/index.ts"],
+      "@weco/shared-module": ["libs/shared-module/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

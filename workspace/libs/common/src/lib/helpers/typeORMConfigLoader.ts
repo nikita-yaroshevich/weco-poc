@@ -1,7 +1,7 @@
 import {ConnectionManager, getConnectionManager} from "typeorm";
 import {TypeOrmModuleOptions} from "@nestjs/typeorm";
 
-export async function typeORMConfigLoader({baseConfig, entities, isProd, srcDir}): Promise<TypeOrmModuleOptions> {
+export async function typeORMConfigLoader({baseConfig, entities, isProd}): Promise<TypeOrmModuleOptions> {
     const connectionManager: ConnectionManager = getConnectionManager();
     let options: any;
     if (connectionManager.has('default')) {
@@ -16,7 +16,7 @@ export async function typeORMConfigLoader({baseConfig, entities, isProd, srcDir}
             // Allow both start:prod and start:dev to use migrations
             // __dirname is either dist or src folder, meaning either
             // the compiled js in prod or the ts in dev.
-            // migrations: [`./migrations/**/*{.ts,.js}`],
+            migrations: [`./migrations/**/*{.ts,.js}`],
             cli: {
                 // Location of migration should be inside src folder
                 // to be compiled into dist/ folder.

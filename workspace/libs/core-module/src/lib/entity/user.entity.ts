@@ -1,9 +1,9 @@
 import { OrganizationEntity } from './organization.entity';
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
 
 @Entity('users')
 export class UserEntity {
-    @PrimaryColumn({ type: 'varchar', length: 255, unique: true })
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column({ type: 'varchar', length: 255, unique: true })

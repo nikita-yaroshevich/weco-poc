@@ -1,5 +1,5 @@
 import {Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn} from 'typeorm';
-import {UserEntity} from './user.entity';
+import {UserEntity} from "./user.entity";
 
 @Entity({name: 'organizations'})
 export class OrganizationEntity {
@@ -9,12 +9,12 @@ export class OrganizationEntity {
     @Column({type: 'varchar', length: 255, unique: true})
     name: string;
 
-    @Column({type: 'varchar', length: 255, unique: true})
+    @Column({type: 'varchar', length: 255, nullable: true})
     type: string;
 
-    @OneToOne(type => UserEntity, {cascade: ['remove']})
+    @OneToOne(type => UserEntity)
     @JoinColumn({name: 'owner_id'})
-    owner: UserEntity;
+    owner?: UserEntity;
 
     @OneToMany(type => UserEntity, user => user.organization)
     users: UserEntity[];

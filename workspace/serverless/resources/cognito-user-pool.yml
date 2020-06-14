@@ -1,32 +1,57 @@
 Resources:
-  CognitoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      # Generate a name based on the stage
-      UserPoolName: ${self:provider.stage}-user-pool
-      # Set email as an alias
-      UsernameAttributes:
-        - email
-      AutoVerifiedAttributes:
-        - email
+    CognitoUserPool:
+        Type: AWS::Cognito::UserPool
+        Properties:
+            # Generate a name based on the stage
+            UserPoolName: ${self:custom.VAR.cognito.userPool}
+            # Set email as an alias
+            UsernameAttributes:
+                - email
+            AutoVerifiedAttributes:
+                - email
+            MfaConfiguration: "OFF"
+            EmailVerificationSubject: "WeCo: Please verify your account"
+            EmailVerificationMessage: "Your verification code is {####}"
+            SmsAuthenticationMessage: "Your WeCo authentication code is {####}"
+            Schema:
+                -   Name: organization
+                    AttributeDataType: String
+                    Mutable: true
+                    Required: false
+                -   Name: email
+                    AttributeDataType: String
+                    Mutable: false
+                    Required: true
+            Policies:
+                PasswordPolicy:
+                    RequireLowercase: true
+                    RequireSymbols: false
+                    RequireNumbers: true
+                    MinimumLength: 8
+                    RequireUppercase: true
+            AdminCreateUserConfig:
+                InviteMessageTemplate:
+                    EmailMessage: "Your WeCo username is {username} and temporary password is {####}."
+                    EmailSubject: "Your temporary api gateway password"
+                    SMSMessage: "Your WeCo username is {username} and temporary password is {####}."
+                UnusedAccountValidityDays: 7
+                AllowAdminCreateUserOnly: false
 
-  CognitoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      # Generate an app client name based on the stage
-      ClientName: ${self:provider.stage}-user-pool-client
-      UserPoolId:
-        Ref: CognitoUserPool
-      ExplicitAuthFlows:
-        - ADMIN_NO_SRP_AUTH
-      GenerateSecret: false
+    CognitoUserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+            # Generate an app client name based on the stage
+            ClientName: ${self:custom.VAR.cognito.userPoolClient}
+            UserPoolId:
+                Ref: CognitoUserPool
+            GenerateSecret: false
 
 # Print out the Id of the User Pool that is created
 Outputs:
-  UserPoolId:
-    Value:
-      Ref: CognitoUserPool
+    UserPoolId:
+        Value:
+            Ref: CognitoUserPool
 
-  UserPoolClientId:
-    Value:
-      Ref: CognitoUserPoolClient
+    UserPoolClientId:
+        Value:
+            Ref: CognitoUserPoolClient

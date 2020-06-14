@@ -6,6 +6,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import * as awsServerlessExpress from 'aws-serverless-express';
 import * as express from 'express';
 import {INestApplication, Logger} from "@nestjs/common";
+import applySwagger from "./swagger";
 
 process.on('unhandledRejection', (reason) => {
     // tslint:disable-next-line:no-console
@@ -38,6 +39,7 @@ async function bootstrapExpress() {
   const app = applyAppConfiguration(await NestFactory.create(AppModule));
 
   const port = process.env.PORT || 8080;
+  applySwagger(app);
   await app.listen(port, () => {
     Logger.log(`App loaded at port ${port}`);
   });

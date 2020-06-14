@@ -1,38 +1,11 @@
-import * as correlator from 'correlation-id';
-import { createLogger, format, Logger, transports } from 'winston';
 import { LoggerServiceInterface } from '../../interfaces';
 import { ConfigServiceInterface } from '../config';
 
 export class LoggerService implements LoggerServiceInterface {
-    private logger: Logger;
+    private logger = console;
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor(configService: ConfigServiceInterface) {
-        const options = configService.get('winston');
-        const logFormat = format.combine(
-            format.timestamp({
-                format: 'YYYY-MM-DD HH:mm:ss:SSSS'
-            }),
-            format.printf(
-                info => `${configService.get('APP_NAME', '')} - [${info.timestamp}] [${correlator.getId()}] [${info.level}] - ${info.message}`
-            )
-        );
-
-        this.logger = createLogger({
-            transports: [
-                new transports.Console({
-                    format: logFormat,
-                    level: options.level
-                })
-            ]
-        });
-    }
-
-    get level() {
-        return this.logger.level;
-    }
-
-    get isProd() {
-        return this.logger.levels[this.logger.level] === 0;
     }
 
     log(level: string, ...data: any[]): LoggerService {
