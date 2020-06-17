@@ -1,0 +1,66 @@
+Resources:
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ${self:custom.stage}-rest-api-gateway
+
+  ApiAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: ${self:custom.stage}-api-authorizer
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      ProviderARNs:
+        - Fn::GetAtt: [CognitoUserPool, Arn]
+
+  # Set SSM params
+  apiAuthorizerParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: ${self:custom.stage}_API_AUTHORIZER
+      Type: String
+      Value: !Ref ApiAuthorizer
+
+Outputs:
+  apiGatewayRestApiId:
+    Value:
+      Ref: ApiGatewayRestApi
+    Export:
+      Name: ${self:custom.stage}-rest-api-gateway
+
+  apiGatewayRestApiRootResourceId:
+    Value:
+      Fn::GetAtt:
+        - ApiGatewayRestApi
+        - RootResourceId
+    Export:
+      Name: ${self:custom.stage}-apiGateway-rootResourceId
+
+  apiGatewayAuthorizerId:
+    Value:
+      Ref: ApiAuthorizer
+    Export:
+      Name: ${self:custom.stage}-apiGateway-authorizerId
+#  GatewayResponseDefault4XX:
+#    Type: AWS::ApiGateway::GatewayResponse
+#    Properties:
+#      ResponseParameters:
+#        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+#        gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+#        gatewayresponse.header.Access-Control-Allow-Methods: '''GET,POST,PUT,DELETE,OPTIONS'''
+#      ResponseType: DEFAULT_4XX
+#      RestApiId:
+#        Ref: ApiGatewayRestApi
+#  GatewayResponseDefault5XX:
+#    Type: AWS::ApiGateway::GatewayResponse
+#    Properties:
+#      ResponseParameters:
+#        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+#        gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+#        gatewayresponse.header.Access-Control-Allow-Methods: '''GET,POST,PUT,DELETE,OPTIONS'''
+#      ResponseType: DEFAULT_5XX
+#      RestApiId:
+#        Ref: ApiGatewayRestApi
+# Print out the Id of the User Pool that is created

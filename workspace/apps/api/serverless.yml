@@ -29,6 +29,11 @@ provider:
   runtime: nodejs12.x
   stage: ${self:custom.stage}
   region: ${opt:region, "${self:custom.config.region}"}
+  apiGateway:
+    restApiId:
+      'Fn::ImportValue': ${self:custom.stage}-rest-api-gateway
+    restApiRootResourceId:
+      'Fn::ImportValue': ${self:custom.stage}-apiGateway-rootResourceId
   deploymentBucket:
     name: ${self:custom.VAR.s3.deploymentBucket}
   environment: ${file(${self:custom.workspacePath}/serverless/environment.yml)}
@@ -53,8 +58,12 @@ functions:
           method: any
           cors: true
           authorizer:
-            name: authorizer
-            arn: ${self:custom.VAR.cognito.userPoolArn}
+            type: COGNITO_USER_POOLS
+            authorizerId: ${cf:infrastructure-dev.apiGatewayAuthorizerId}
+#            authorizerId: ${cf:infrastructure-${self:custom.stage}.apiGatewayAuthorizerId}
+# aws cognito-idp sign-up --region ca-central-1 --client-id 35a10ksdhk7ro8ojl1qkfeaj59 --username admin@example.com --password 'Q!w2e3r4'
+# aws cognito-idp admin-confirm-sign-up --region ca-central-1 --user-pool-id ca-central-1_NdIlBq6Sj --username admin@example.com
+# aws cognito-idp initiate-auth --region ca-central-1 --cli-input-json file://./serverless/tmp/auth.json
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)

@@ -1,57 +1,171 @@
 Resources:
-    CognitoUserPool:
-        Type: AWS::Cognito::UserPool
-        Properties:
-            # Generate a name based on the stage
-            UserPoolName: ${self:custom.VAR.cognito.userPool}
-            # Set email as an alias
-            UsernameAttributes:
-                - email
-            AutoVerifiedAttributes:
-                - email
-            MfaConfiguration: "OFF"
-            EmailVerificationSubject: "WeCo: Please verify your account"
-            EmailVerificationMessage: "Your verification code is {####}"
-            SmsAuthenticationMessage: "Your WeCo authentication code is {####}"
-            Schema:
-                -   Name: organization
-                    AttributeDataType: String
-                    Mutable: true
-                    Required: false
-                -   Name: email
-                    AttributeDataType: String
-                    Mutable: false
-                    Required: true
-            Policies:
-                PasswordPolicy:
-                    RequireLowercase: true
-                    RequireSymbols: false
-                    RequireNumbers: true
-                    MinimumLength: 8
-                    RequireUppercase: true
-            AdminCreateUserConfig:
-                InviteMessageTemplate:
-                    EmailMessage: "Your WeCo username is {username} and temporary password is {####}."
-                    EmailSubject: "Your temporary api gateway password"
-                    SMSMessage: "Your WeCo username is {username} and temporary password is {####}."
-                UnusedAccountValidityDays: 7
-                AllowAdminCreateUserOnly: false
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      # Generate a name based on the stage
+      UserPoolName: ${self:custom.VAR.cognito.userPool}
+      # Set email as an alias
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: "OFF"
+      EmailVerificationSubject: "WeCo: Please verify your account"
+      EmailVerificationMessage: "Your verification code is {####}"
+      SmsAuthenticationMessage: "Your WeCo authentication code is {####}"
+      Schema:
+        - Name: organization
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+      Policies:
+        PasswordPolicy:
+          RequireLowercase: true
+          RequireSymbols: false
+          RequireNumbers: true
+          MinimumLength: 8
+          RequireUppercase: true
+      AdminCreateUserConfig:
+        InviteMessageTemplate:
+          EmailMessage: "Your WeCo username is {username} and temporary password is {####}."
+          EmailSubject: "Come and assess your WeCo experience"
+          SMSMessage: "Your WeCo username is {username} and temporary password is {####}."
+        UnusedAccountValidityDays: 7
+        AllowAdminCreateUserOnly: false
 
-    CognitoUserPoolClient:
-        Type: AWS::Cognito::UserPoolClient
-        Properties:
-            # Generate an app client name based on the stage
-            ClientName: ${self:custom.VAR.cognito.userPoolClient}
-            UserPoolId:
-                Ref: CognitoUserPool
-            GenerateSecret: false
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      # Generate an app client name based on the stage
+      ClientName: ${self:custom.VAR.cognito.userPoolClient}
+      UserPoolId:
+        Ref: CognitoUserPool
+      GenerateSecret: true
+      AllowedOAuthFlows:
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - http://localhost:3000
+      AllowedOAuthScopes:
+        - openid
+        - email
+      SupportedIdentityProviders:
+        - COGNITO
+#        - Facebook
+#        - Google
+      ExplicitAuthFlows:
+        - 'ALLOW_ADMIN_USER_PASSWORD_AUTH'
+        - 'ALLOW_USER_PASSWORD_AUTH'
+        - 'ALLOW_CUSTOM_AUTH'
+        - 'ALLOW_REFRESH_TOKEN_AUTH'
 
+  # Creates a federeated Identity pool
+  IdentityPool:
+    Type: "AWS::Cognito::IdentityPool"
+    Properties:
+      IdentityPoolName: ${self:custom.VAR.cognito.identityPoolName}
+      AllowUnauthenticatedIdentities: true
+      CognitoIdentityProviders:
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+  UserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: ${self:custom.VAR.domain.auth}
+      UserPoolId: !Ref CognitoUserPool
+
+  # Create a role for authorized acces to AWS resources. Control what your user can access. This example only allows Lambda invokation
+  # Only allows users in the previously created Identity Pool
+  CognitoAuthorizedRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Federated: "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              StringEquals:
+                "cognito-identity.amazonaws.com:aud": !Ref IdentityPool
+              "ForAnyValue:StringLike":
+                "cognito-identity.amazonaws.com:amr": authenticated
+      Policies:
+        - PolicyName: "CognitoAuthorizedPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "mobileanalytics:PutEvents"
+                  - "cognito-sync:*"
+                  - "cognito-identity:*"
+                Resource: "*"
+              - Effect: "Allow"
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource: "*"
+
+  # Assigns the roles to the Identity Pool
+  IdentityPoolRoleMapping:
+    Type: "AWS::Cognito::IdentityPoolRoleAttachment"
+    Properties:
+      IdentityPoolId: !Ref IdentityPool
+      Roles:
+        authenticated: !GetAtt CognitoAuthorizedRole.Arn
+
+  # Set SSM params
+  cognitoUserPoolIdSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: ${self:custom.stage}_COGNITO_USER_POOL_ID
+      Type: String
+      Value: !Ref CognitoUserPool
+  cognitoUserPoolArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: ${self:custom.stage}_COGNITO_USER_POOL_ARN
+      Type: String
+      Value: !GetAtt CognitoUserPool.Arn
+  cognitoClientIdSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: ${self:custom.stage}_COGNITO_CLIENT_ID
+      Type: String
+      Value: !Ref CognitoUserPoolClient
+  accountId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: ACCOUNT_ID
+      Type: String
+      Value: 124599504267
 # Print out the Id of the User Pool that is created
 Outputs:
-    UserPoolId:
-        Value:
-            Ref: CognitoUserPool
+  UserPoolId:
+    Value:
+      Ref: CognitoUserPool
+    Export:
+      Name: ${self:custom.VAR.cognito.userPoolIdRef}
 
-    UserPoolClientId:
-        Value:
-            Ref: CognitoUserPoolClient
+  UserPoolClientId:
+    Value:
+      Ref: CognitoUserPoolClient
+    Export:
+      Name: ${self:custom.VAR.cognito.userPoolClientIdRef}
+
+  IdentityPoolId:
+    Value:
+      Ref: IdentityPool
+    Export:
+      Name: ${self:custom.VAR.cognito.identityPoolIdRef}
+
+  UserPoolDomainId:
+    Value: !Ref UserPoolDomain
+    Export:
+      Name: ${self:custom.VAR.domain.authRef}

@@ -1,4 +1,4 @@
-import {Controller, Get, Inject} from '@nestjs/common';
+import {Controller, Get, Inject, Req} from '@nestjs/common';
 
 import { AppService } from './app.service';
 import {ConfigService} from "@nestjs/config";
@@ -8,7 +8,7 @@ export class AppController {
   constructor(private readonly appService: AppService, @Inject('config') private config:ConfigService) {}
 
   @Get('test')
-  getData() {
-    return {...this.appService.getData(), env: this.config, e2: process.env};
+  getData(@Req() request) {
+    return {...this.appService.getData(), env: this.config, e2: process.env, request: request.apiGateway};
   }
 }

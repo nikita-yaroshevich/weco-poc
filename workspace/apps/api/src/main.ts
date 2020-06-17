@@ -4,6 +4,7 @@ import { AppModule } from './app/app.module';
 import { Server } from 'http';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as awsServerlessExpress from 'aws-serverless-express';
+import * as awsServerlessExpressMiddleware from "aws-serverless-express/middleware";
 import * as express from 'express';
 import {INestApplication, Logger} from "@nestjs/common";
 import applySwagger from "./swagger";
@@ -31,6 +32,7 @@ const bootstrapLambdaServer = async (): Promise<Server> => {
   const expressApp = express();
   const adapter = new ExpressAdapter(expressApp);
   const app = applyAppConfiguration(await NestFactory.create(AppModule, adapter));
+  app.use(awsServerlessExpressMiddleware.eventContext());
   await app.init();
   return awsServerlessExpress.createServer(expressApp);
 };

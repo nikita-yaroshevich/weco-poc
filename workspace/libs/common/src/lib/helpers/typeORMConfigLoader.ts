@@ -8,7 +8,7 @@ export async function typeORMConfigLoader({baseConfig, entities, isProd}): Promi
         options = connectionManager.get('default').options;
         await connectionManager.get('default').close();
     } else {
-        // todo: Here is a good place to add loading DB connection params from AWS SSM ParamStore
+        // todo: Here is a good place to add loading DB connection params from AWS SSM ParamStore to run migrations on CI\CD
         options = {
             ...baseConfig,
             entities: entities,
@@ -16,7 +16,7 @@ export async function typeORMConfigLoader({baseConfig, entities, isProd}): Promi
             // Allow both start:prod and start:dev to use migrations
             // __dirname is either dist or src folder, meaning either
             // the compiled js in prod or the ts in dev.
-            migrations: [`./migrations/**/*{.ts,.js}`],
+            // migrations: [`./migrations/**/*{.ts,.js}`],
             cli: {
                 // Location of migration should be inside src folder
                 // to be compiled into dist/ folder.

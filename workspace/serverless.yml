@@ -7,6 +7,7 @@ plugins:
   localPath: './serverless/plugins'
   modules:
     - serverless-layers
+#    - serverless-domain-manager
 
 custom:
   workspacePath: './'
@@ -18,12 +19,24 @@ custom:
   serverless-layers:
     - common:
         dependenciesPath: ./package.json
+  customDomain:
+    domainName: ${self:custom.VAR.domain.domainName}
+    stage: ${self:custom.stage}
+    apiType: rest
 
 provider:
   name: aws
   runtime: nodejs12.x
   stage: ${self:custom.stage}
   region: ${self:custom.region}
+  apiName: ${self:custom.VAR.domain.apiName}
+  apiGateway:
+    restApiId:
+      Ref: ApiGatewayRestApi
+    restApiResources:
+      Fn::GetAtt:
+        - ApiGatewayRestApi
+        - RootResourceId
   deploymentBucket:
     name: ${self:custom.VAR.s3.deploymentBucket}
   environment: ${file(${self:custom.workspacePath}/serverless/environment.yml)}
@@ -42,3 +55,4 @@ provider:
 resources:
   # Cognito
   - ${file(serverless/resources/cognito-user-pool.yml)}
+  - ${file(serverless/resources/auth.yml)}

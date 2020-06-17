@@ -1,8 +1,18 @@
 cognito:
-    userPool: ${self:custom.stage}-user-pool-client
+    userPool: ${self:custom.stage}-user-pool
     userPoolClient: ${self:custom.stage}-user-pool-client
-    userPoolArn: arn:aws:cognito-idp:${self:custom.region}:${self:custom.ACCOUNT_ID}:userpool/${self:custom.stage}-user-pool-client
+    userPoolArn: arn:aws:cognito-idp:${self:custom.region}:${self:custom.ACCOUNT_ID}:userpool/${self:custom.stage}-user-pool
+    identityPoolName: ${self:custom.stage}-identity-pool
+    userPoolIdRef: ${self:custom.stage}-user-pool-id
+    userPoolClientIdRef: ${self:custom.stage}-user-pool-client-id
+    identityPoolIdRef: ${self:custom.stage}-identity-pool-id
+    apiAuthorizerRef: ${self:custom.stage}-api-authorizer
 s3:
     deploymentBucket: ${self:app}.sls.${self:custom.stage}.${self:custom.region}.deploys
 layers:
     commonArn: arn:aws:lambda:${self:custom.region}:${self:custom.ACCOUNT_ID}:layer:${self:custom.config.baseService}-${self:custom.stage}-nodejs-common:$LATEST
+domain:
+  auth: ${self:custom.stage}-api-weco-edu-poc
+  authRef: ${self:custom.stage}-api-weco-edu-poc
+  apiName: ${self:custom.stage}
+  domainName: api-${self:custom.stage}.edu.weco.online
