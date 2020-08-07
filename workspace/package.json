@@ -43,7 +43,7 @@
     "aws-serverless-express": "^3.3.8",
     "axios": "^0.19.2",
     "cache-manager": "^3.3.0",
-    "class-transformer": "^0.2.3",
+    "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
