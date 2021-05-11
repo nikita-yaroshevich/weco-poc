@@ -50,7 +50,7 @@
     "globby": "^11.0.1",
     "inflected": "^2.0.4",
     "ioredis": "^4.17.3",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "pgb": "0.0.1",
     "pgsql": "^1.0.0",
     "reflect-metadata": "^0.1.13",
