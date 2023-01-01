@@ -60,14 +60,14 @@
     "uuid": "^8.1.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^7.0.0",
+    "@nestjs/cli": "^9.1.8",
     "@nestjs/schematics": "^7.0.0",
     "@nestjs/testing": "^7.0.0",
     "@nrwl/cli": "^9.3.0",
     "@nrwl/eslint-plugin-nx": "9.3.0",
     "@nrwl/jest": "9.3.0",
-    "@nrwl/nest": "^9.3.0",
-    "@nrwl/node": "9.3.0",
+    "@nrwl/nest": "^15.4.2",
+    "@nrwl/node": "15.4.2",
     "@nrwl/workspace": "9.3.0",
     "@types/express": "^4.17.3",
     "@types/jest": "25.2.3",
@@ -86,9 +86,9 @@
     "serverless-offline": "^6.4.0",
     "supertest": "^4.0.2",
     "ts-jest": "26.1.0",
-    "ts-loader": "^6.2.1",
+    "ts-loader": "^9.4.2",
     "ts-node": "^8.6.2",
-    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths": "^3.10.1",
     "tslint": "~6.0.0",
     "typescript": "~3.8.3"
   }
