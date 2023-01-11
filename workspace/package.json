@@ -44,7 +44,7 @@
     "axios": "^0.19.2",
     "cache-manager": "^3.3.0",
     "class-transformer": "^0.2.3",
-    "class-validator": "^0.12.2",
+    "class-validator": "^0.14.0",
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
     "globby": "^11.0.1",
